@@ -29,7 +29,7 @@ const orbitParams = {
     Saturn: { speed: 0.0008, radius: 138 },
     Uranus: { speed: 0.0006, radius: 98 },
     Neptune: { speed: 0.0004, radius: 58 },
-    EarthSatellite: { speed: 0.002, radius: 8 } // Orbiting around Earth
+    EarthSatellite: { speed: 0.002, radius: 8 }
 };
 
 const orbitalObjects = [];
@@ -73,12 +73,10 @@ function createRingWithOrbit(loader, texturePath, planet, sizeInner, sizeOuter) 
     });
     const ring = new THREE.Mesh(geometry, material);
 
-    ring.rotation.x = Math.PI / 2; // Flat rotation for the ring
+    ring.rotation.x = Math.PI / 2;
     ring.receiveShadow = true;
     ring.castShadow = false;
-    // ring.lookAt(640, 1500, 0)
 
-    // Attach the ring to the planet
     planet.add(ring);
 
     return ring;
@@ -88,19 +86,18 @@ function createRingWithOrbit(loader, texturePath, planet, sizeInner, sizeOuter) 
 function updateOrbit() {
     orbitalObjects.forEach((object) => {
         if (object.orbitData) {
-            object.orbitData.angle += object.orbitData.speed; // Increment the angle based on speed
-            object.position.x = Math.cos(object.orbitData.angle) * object.orbitData.radius + 640; // Orbit around Sun
+            object.orbitData.angle += object.orbitData.speed; 
+            object.position.x = Math.cos(object.orbitData.angle) * object.orbitData.radius + 640; 
             object.position.z = Math.sin(object.orbitData.angle) * object.orbitData.radius + 0;
         }
     });
 
-    // Earth satellite orbiting Earth
     if (earth && satellite) {
         const satelliteData = orbitParams.EarthSatellite;
-        satelliteData.angle = (satelliteData.angle || 0) + satelliteData.speed; // Increment the angle
+        satelliteData.angle = (satelliteData.angle || 0) + satelliteData.speed; 
         satellite.position.x = earth.position.x + Math.cos(satelliteData.angle) * satelliteData.radius;
         satellite.position.z = earth.position.z + Math.sin(satelliteData.angle) * satelliteData.radius;
-        satellite.position.y = earth.position.y; // Keep the satellite at the same height
+        satellite.position.y = earth.position.y; 
     }
 }
 
@@ -114,11 +111,10 @@ function init() {
     thirdPersonCamera = new THREE.PerspectiveCamera(
         90, 
         window.innerWidth / window.innerHeight, 
-        0.1, // Near plane
-        10000 // Far plane
+        0.1, 
+        10000 
     );
 
-    // Set the default active camera
     activeCamera = camera;
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -129,7 +125,6 @@ function init() {
     const loader = new TextureLoader();
     const gltfLoader = new GLTFLoader();
 
-    // Lighting
     const pointLight = new THREE.PointLight(0xFFFFFF, 1, 1280);
     pointLight.castShadow = true;
     pointLight.position.set(640, 320, 0);
@@ -139,7 +134,6 @@ function init() {
     spotlight.castShadow = true;
     scene.add(spotlight);
 
-    // Load Spaceship
     gltfLoader.load('./model/spaceship/scene.gltf', (gltf) => {
         spaceship = gltf.scene;
         spaceship.position.set(240, 320, 10);
@@ -149,7 +143,6 @@ function init() {
         scene.add(spaceship);
     });
 
-    // Corrected and rotated planet positions
     createPlanetWithOrbit(loader, 'Mercury', 3.2, './textures/mercury.jpg', { x: 58, y: 320, z: 0 });
     createPlanetWithOrbit(loader, 'Venus', 4.8, './textures/venus.jpg', { x: 80, y: 320, z: 0 });
     earth = createPlanetWithOrbit(loader, 'Earth', 4.8, './textures/earth.jpg', { x: 100, y: 320, z: 0 });
@@ -162,10 +155,10 @@ function init() {
     createPlanetWithOrbit(loader, 'Neptune', 6, './textures/neptune.jpg', { x: 320, y: 320, z: 0 });
 
 
-    const sungeo = new THREE.SphereGeometry(40, 64, 64); // Larger radius
+    const sungeo = new THREE.SphereGeometry(40, 64, 64); 
     const sunmat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
     const sun = new THREE.Mesh(sungeo, sunmat);
-    sun.position.set(640, 320, 0); // Position within camera view
+    sun.position.set(640, 320, 0); 
     const suntexture = loader.load('./textures/sun.jpg', () => {
         console.log('Sun texture loaded successfully');
     }, undefined, (error) => {
@@ -207,50 +200,45 @@ function onKeyPress(event) {
         activeCamera = thirdPersonCamera;
         controls.enabled = false;
         console.log('Switched to Third-Person Camera');
-        updateThirdPersonCamera(); // Ensure the camera updates when switching
+        updateThirdPersonCamera(); 
     }
 }
 
 function updateSpaceshipMovement() {
-    if (!spaceship) return; // Skip if spaceship is not loaded
+    if (!spaceship) return; 
 
-    console.log(keys); // Check if keys are being tracked
+    console.log(keys); 
 
-    const direction = new THREE.Vector3(); // Direction vector
+    const direction = new THREE.Vector3(); 
     const rotationMatrix = new THREE.Matrix4();
     rotationMatrix.makeRotationFromQuaternion(spaceship.quaternion);
 
-    // Forward and backward movement
     if (keys['w']) {
-        direction.z = 1; // Forward
+        direction.z = 1; 
     } else if (keys['s']) {
-        direction.z = -1; // Backward
+        direction.z = -1; 
     }
 
-    // Left and right movement
     if (keys['a']) {
-        direction.x = 1; // Left
+        direction.x = 1; 
     } else if (keys['d']) {
-        direction.x = -1; // Right
+        direction.x = -1; 
     }
 
-    // Apply direction relative to the spaceship's orientation
     direction.applyMatrix4(rotationMatrix).normalize();
 
-    // Update the spaceship's position
     spaceship.position.addScaledVector(direction, spaceshipSpeed);
 }
 
 
 function updateThirdPersonCamera() {
     if (spaceship) {
-        const offset = new THREE.Vector3(0, 16, -16); // Fixed offset
-        offset.applyQuaternion(spaceship.quaternion); // Rotate offset with spaceship
+        const offset = new THREE.Vector3(0, 16, -16); 
+        offset.applyQuaternion(spaceship.quaternion); 
         const targetPosition = new THREE.Vector3().copy(spaceship.position).add(offset);
 
-        // Smooth camera movement using lerp
-        thirdPersonCamera.position.lerp(targetPosition, 0.1); // 0.1 controls the smoothness
-        thirdPersonCamera.lookAt(spaceship.position); // Keep the camera focused on the spaceship
+        thirdPersonCamera.position.lerp(targetPosition, 0.1); 
+        thirdPersonCamera.lookAt(spaceship.position); 
     }
 }
 
@@ -276,7 +264,6 @@ function create3DText(text, size = 2, height = 20) {
         height: height,
     });
 
-    // Center the text geometry
     textGeometry.center();
 
     const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -296,59 +283,49 @@ function onMouseMove(event) {
     if (intersects.length > 0) {
         const hoveredObject = intersects[0].object;
 
-        // Ensure the object is a planet or has a name
         if (hoveredObject.orbitData || hoveredObject.name) {
-            // Highlight the planet with a different color
+
             if (hoveredObject.material && hoveredObject.material.color) {
-                hoveredObject.material.color.set(0xffaa00); // Highlight color
+                hoveredObject.material.color.set(0xffaa00); 
             }
 
-            // Add or update the text label above the planet
             if (!currentLabel) {
-                currentLabel = create3DText(hoveredObject.name || 'Unknown', 3, 0.3); // Initial size
+                currentLabel = create3DText(hoveredObject.name || 'Unknown', 3, 0.3); 
                 if (currentLabel) {
                     scene.add(currentLabel);
                 }
             }
 
-            // Update label position to hover above the planet
             if (currentLabel) {
-                const planetRadius = hoveredObject.geometry.parameters.radius || 1; // Default radius
+                const planetRadius = hoveredObject.geometry.parameters.radius || 1;
                 currentLabel.position.set(
                     hoveredObject.position.x,
-                    hoveredObject.position.y + planetRadius + 20, // Adjust offset as needed
+                    hoveredObject.position.y + planetRadius + 20, 
                     hoveredObject.position.z
                 );
 
-                // Scale the text to a larger size
-                const scaleFactor = 5; // Adjust for desired size
+                const scaleFactor = 5; 
                 currentLabel.scale.set(scaleFactor, scaleFactor, scaleFactor);
 
-                // Ensure the text faces the camera
                 currentLabel.lookAt(camera.position);
             }
         }
     } else {
-        // Remove the label and reset hover color
+
         if (currentLabel) {
             scene.remove(currentLabel);
-            currentLabel.geometry.dispose(); // Clean up memory
+            currentLabel.geometry.dispose(); 
             currentLabel.material.dispose();
             currentLabel = null;
         }
 
-        // Reset color of previously hovered objects
         scene.children.forEach(child => {
             if (child.material && child.material.color) {
-                child.material.color.set(0xffffff); // Default color
+                child.material.color.set(0xffffff); 
             }
         });
     }
 }
-
-
-
-
 
 function onClick() {
     raycaster.setFromCamera(mouse, camera);
@@ -356,18 +333,15 @@ function onClick() {
     if (intersects.length > 0) {
         const clickedObject = intersects[0].object;
 
-        if (clickedObject.name) { // Ensure the clicked object has a name (indicating it's a planet)
+        if (clickedObject.name) { 
             console.log(`Clicked on: ${clickedObject.name}`);
 
-            // Set or update the rotation speed
             if (!clickedObject.rotationSpeed) {
-                clickedObject.rotationSpeed = 0.01; // Default rotation speed
+                clickedObject.rotationSpeed = 0.01; 
             }
 
-            // Double the rotation speed
             clickedObject.rotationSpeed *= 2;
 
-            // Reset the speed back after 1 second
             setTimeout(() => {
                 clickedObject.rotationSpeed /= 2;
             }, 1000);
